@@ -1,6 +1,6 @@
 # xuatbansachvn2021
 
-## Đề tài cuối kỳ Lập trình R
+## Đề tài cuối kỳ Lập trình R - học kỳ 1 năm 2022
 
 ### Sinh viên thực hiện:
 |Họ và tên | MSV|
