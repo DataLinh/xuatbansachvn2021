@@ -1,0 +1,121 @@
+---
+title: "xuatbansachvn2021"
+output: html_document
+date: "2022-10-27"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Library
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+```
+
+## Data
+
+- Dữ liệu được trích xuất từ trang web https://ppdvn.gov.vn/web/guest/ke-hoach-xuat-ban, được lọc theo điều kiện là sách được đăng ký xuất bản trong năm 2021.
+- Dữ liệu được lấy bằng mã R (file `crawl.r`) tạo thành nhiều tệp tin csv, mỗi tệp tin thể hiện dữ liệu sách xuất bản trong một ngày, sau đó được ghép lại thành một tệp tin csv duy nhất (file `merge.r`).
+
+```{r}
+dataf <- read.csv("data/data.csv", encoding = "UTF-8")
+head(dataf)
+```
+
+### Các biến
+- `isbn`: mã ISBN của sách
+- `name`: tên sách
+- `author`: tên tác giả
+- `translator`: tên dịch giả
+- `quantity`: số lượng sách đăng ký xuất bản
+- `self`: Sách có phải là tự xuất bản hay không
+- `parner`: Đối tác liên kết
+- `verification`: Số xác nhận đăng ký xuất bản
+- `date`: ngày đăng ký xuất bản
+
+## Data cleaning
+
+### Đổi kiểu dữ liệu của biến `date`
+
+```{r}
+dataf$date <- as.Date(dataf$date)
+```
+
+## EDA
+
+```{r}
+summary(dataf)
+```
+
+-  Nhận xét: 
+    - Dữ liệu gồm 59246 dòng và 9 cột, ngoài ra ở cột `verification` có thể tách nội cuối cuối thành tên xuất bản.
+    - Ở cột `quantity` giá trị max là 300010000, có vẻ đây là dữ liệu lỗi trong quá trình nhập.
+    - Ở cột `quantity` có giá trị min là 0, đây là giá trị cần xem xét thêm.
+
+
+### Biểu đồ số đầu sách đăng ký xuất bản theo tháng
+
+```{r}
+dataf %>%
+  mutate(month = format(date, "%m")) %>%
+  group_by(month) %>%
+  summarise(quantity = n()) %>%
+  ggplot(aes(x = month, y = quantity)) +
+  geom_col() +
+  labs(
+    title = "Số đầu sách đăng ký xuất bản theo tháng",
+    x = "Tháng",
+    y = "Số đầu sách"
+  )
+```
+
+- Nhận xét: 
+    - Tháng 1 có số đầu sách đăng ký xuất bản nhiều nhất, có thể do đây là tháng đầu năm, nhiều nhà xuất bản đăng ký xuất bản sách mới.
+
+### Biểu đồ số lượng sách đăng ký xuất bản theo tháng
+
+```{r}
+dataf %>%
+  mutate(month = format(date, "%m")) %>%
+  group_by(month) %>%
+  summarise(quantity = sum(quantity)) %>%
+  ggplot(aes(x = month, y = quantity)) +
+  geom_col() +
+  labs(
+    title = "Số lượng sách đăng ký xuất bản theo tháng",
+    x = "Tháng",
+    y = "Số lượng sách"
+  )
+```
+
+- Nhận xét: 
+    - Tháng 1 có số lượng sách đăng ký xuất bản nhiều nhất, có thể do đây là tháng đầu năm, nhiều nhà xuất bản đăng ký xuất bản sách mới.
+    - Tháng 9 có số lượng sách đăng ký xuất bản lớn, có thể do đây là tháng đầu học kỳ mới, số lượng sách in trong lĩnh vực giáo dục tăng.
+
+## Kế hoạch phân tích
+
+### Data cleaning
+- Lọc bỏ các giá trị lỗi trong cột `quantity`
+- Tách nội dung cột `verification` thành tên xuất bản
+- Sửa lại các kiểu dữ liệu phù hơp cho các biến
+
+### Các câu hỏi
+- Các biến `author`, `translator`, `parner` có ảnh hưởng như thế nào đến số lượng sách xuất bản?
+- Các biến `self` có ảnh hưởng đến số lượng sách xuất bản hay không?
+- Dịch bệnh covid có tăng số lượng sách liên quan đến y tế hay không?
+- Số lượng đăng ký sách xuất bản có tăng theo thời gian hay không?
+- Số lượng đăng ký xuất bản có một phân bố chung trong các tháng hay không?
+- Nhà xuất bản có ảnh hưởng đến số lượng sách xuất bản hay không?
+
+### Các phương pháp phân tích
+- Mô tả dữ liệu
+- Phân tích tương quan
+- Phân tích phân bố
+- Phân tích thống kê
+- Trực quan hóa dữ liệu
+- Tìm kiếm các từ khóa liên quan đến y tế trong các tên sách
+- Kiểm định giả thuyết về số lượng sách liên đến ý tế.
+- Kiểm định giả thuyết về số lượng sách xuất bản theo tháng.
